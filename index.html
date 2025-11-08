@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mappa ristoranti Firenze</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map { height: 100vh; }
+    .leaflet-tooltip.label {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ccc;
+      color: #111827;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    const map = L.map('map').setView([43.77, 11.25], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const ristoranti = [
+      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso"],
+      ["Il Latini", 43.77178234, 11.24922621, "rosso"],
+      ["Osteria dei Pazzi", 43.76981604, 11.26091368, "rosso"],
+      ["Trattoria Bordino", 43.76697046, 11.25327581, "rosso"],
+      ["Il Grande Nuti Trattoria", 43.77438447, 11.25494761, "rosso"],
+      ["Agricola Toscana", 43.77139809, 11.25696094, "rosso"],
+      ["Brandolino", 43.77490346, 11.25258631, "rosso"],
+      ["L'Osteria", 43.76789826, 11.25907833, "rosso"],
+      ["ARTE' BOUTIQUE HOTEL FI", 43.77572356, 11.25666108, "verde"]
+    ];
+
+    const colori = {
+      rosso: 'red',
+      verde: 'green'
+    };
+
+    const markers = [];
+    ristoranti.forEach(([nome, lat, lon, colore]) => {
+      const icon = new L.Icon({
+        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/marker-icon-${colori[colore] || 'blue'}.png`,
+        shadowUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      const marker = L.marker([lat, lon], { icon }).addTo(map);
+      marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] }).openTooltip();
+      marker.bindPopup(`<strong>${nome}</strong><br>Lat: ${lat}<br>Lon: ${lon}`);
+      markers.push(marker);
+    });
+
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds(), { padding: [30, 30] });
+  </script>
+</body>
+</html>
