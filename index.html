@@ -24,7 +24,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const map = L.map('map').setView([43.77, 11.25], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+  maxZoom: 20,
+  attribution: '&copy; OpenStreetMap contributors, Tiles &copy; Stamen Design'
+}).addTo(map);
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
@@ -68,4 +71,5 @@ map.fitBounds(group.getBounds(), { padding: [30, 30] });
 </script>
 </body>
 </html>
+
 
