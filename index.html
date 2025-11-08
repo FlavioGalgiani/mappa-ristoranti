@@ -42,10 +42,10 @@
   <script>
     const map = L.map('map').setView([43.77, 11.25], 14);
 
-    // ✅ Sfondo bianco e nero (Stadia Maps - compatibile con GitHub Pages)
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+    // ✅ Sfondo bianco e nero stabile (CartoDB Positron)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
-      attribution: '&copy; OpenStreetMap contributors, &copy; Stadia Maps'
+      attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
     }).addTo(map);
 
     const ristoranti = [
