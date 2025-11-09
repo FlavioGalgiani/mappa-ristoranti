@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mappa ristoranti Firenze</title>
+  <title>Mappa ristoranti e punti d'interesse Firenze</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
     html, body { height: 100%; margin: 0; }
@@ -35,20 +35,21 @@
   <div id="map"></div>
   <div class="legend">
     <span style="color:red;">&#9679;</span> Ristoranti<br>
-    <span style="color:green;">&#9679;</span> Hotel
+    <span style="color:green;">&#9679;</span> Hotel<br>
+    <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const map = L.map('map').setView([43.77, 11.25], 14);
 
-    // ✅ Sfondo bianco e nero stabile (CartoDB Positron)
+    // Sfondo bianco e nero (CartoDB Positron - stabile)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
       attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
     }).addTo(map);
 
-    const ristoranti = [
+    const punti = [
       ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso"],
       ["Il Latini", 43.77178234, 11.24922621, "rosso"],
       ["Osteria dei Pazzi", 43.76981604, 11.26091368, "rosso"],
@@ -57,10 +58,12 @@
       ["Agricola Toscana", 43.77139809, 11.25696094, "rosso"],
       ["Brandolino", 43.77490346, 11.25258631, "rosso"],
       ["L'Osteria", 43.76789826, 11.25907833, "rosso"],
-      ["ARTE' BOUTIQUE HOTEL FI", 43.77572356, 11.25666108, "verde"]
+      ["ARTE' BOUTIQUE HOTEL FI", 43.77572356, 11.25666108, "verde"],
+      ["I Giardini di Boboli", 43.76255141, 11.24836741, "blu"],
+      ["Parco dei Giochi di Legno", 43.7701264, 11.22673691, "blu"]
     ];
 
-    // funzione per icone SVG colorate
+    // icone SVG colorate
     function coloredIcon(color) {
       return L.divIcon({
         className: "",
@@ -75,8 +78,10 @@
     }
 
     const markers = [];
-    ristoranti.forEach(([nome, lat, lon, colore]) => {
-      const color = (colore === "rosso") ? "red" : "green";
+    punti.forEach(([nome, lat, lon, colore]) => {
+      let color = "red";
+      if (colore === "verde") color = "green";
+      if (colore === "blu") color = "blue";
       const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
       marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] }).openTooltip();
       markers.push(marker);
