@@ -91,7 +91,6 @@
     }
     .suggestions div:hover { background: #f0f0f0; }
 
-    /* Pannello direzioni */
     .leaflet-routing-container {
       font-family: Arial, sans-serif;
       font-size: 8pt;
@@ -134,18 +133,19 @@
     }
     .route-btn:hover { background: #2563eb; }
 
-    /* Pulsanti posizione - spostati in basso a sinistra */
+    /* Pulsanti posizione perfettamente nell'angolo in basso a sinistra */
     .position-controls {
       position: absolute;
-      bottom: 85px;
+      bottom: 15px;
       left: 15px;
       display: flex;
       flex-direction: column;
       gap: 6px;
       z-index: 1000;
     }
+
     .locate-btn, .stop-btn {
-      background: white;
+      background: rgba(255,255,255,0.95);
       border: 1px solid #ccc;
       border-radius: 6px;
       padding: 6px 10px;
@@ -153,18 +153,37 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-weight: 600;
       font-size: 8pt;
-      width: 120px;
+      width: 130px;
+      text-align: left;
     }
+
     .locate-btn { color: #1d4ed8; }
     .stop-btn { color: #dc2626; }
-    .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
 
-    /* Pulsanti zoom sopra */
+    .locate-btn:hover, .stop-btn:hover {
+      background: #f0f0f0;
+    }
+
+    /* Pulsanti zoom appena sopra */
     .leaflet-control-zoom {
       position: absolute !important;
-      bottom: 15px !important;
+      bottom: 90px !important;
       left: 15px !important;
       z-index: 1000 !important;
+    }
+
+    /* Mobile ottimizzato */
+    @media (max-width: 768px) {
+      .position-controls {
+        bottom: 10px;
+        left: 10px;
+        gap: 5px;
+      }
+      .locate-btn, .stop-btn {
+        font-size: 9pt;
+        padding: 7px 10px;
+        width: 140px;
+      }
     }
   </style>
 </head>
@@ -185,7 +204,7 @@
     <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
-  <!-- pulsanti posizione spostati in basso -->
+  <!-- Pulsanti posizione nell'angolo in basso a sinistra -->
   <div class="position-controls">
     <button class="locate-btn" onclick="trovaPosizione()">📍 Trova posizione</button>
     <button class="stop-btn" onclick="fermaPosizione()">🛑 Stop tracciamento</button>
@@ -334,7 +353,7 @@
           position: 'topright'
         }).addTo(map);
 
-        // Mobile: pannello espandibile
+        // Pannello espandibile su mobile
         setTimeout(() => {
           const panel = document.querySelector('.leaflet-routing-container');
           if (!panel) return;
