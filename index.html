@@ -133,18 +133,15 @@
     }
     .route-btn:hover { background: #2563eb; }
 
-    /* Pulsanti posizione perfettamente nell'angolo in basso a sinistra */
+    /* Pulsante posizione in basso a sinistra */
     .position-controls {
       position: absolute;
       bottom: 15px;
       left: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
       z-index: 1000;
     }
 
-    .locate-btn, .stop-btn {
+    .locate-btn {
       background: rgba(255,255,255,0.95);
       border: 1px solid #ccc;
       border-radius: 6px;
@@ -153,33 +150,23 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-weight: 600;
       font-size: 8pt;
+      color: #1d4ed8;
       width: 130px;
       text-align: left;
     }
 
-    .locate-btn { color: #1d4ed8; }
-    .stop-btn { color: #dc2626; }
+    .locate-btn:hover { background: #f0f0f0; }
 
-    .locate-btn:hover, .stop-btn:hover {
-      background: #f0f0f0;
-    }
-
-    /* Pulsanti zoom appena sopra */
     .leaflet-control-zoom {
       position: absolute !important;
-      bottom: 90px !important;
+      bottom: 80px !important;
       left: 15px !important;
       z-index: 1000 !important;
     }
 
-    /* Mobile ottimizzato */
     @media (max-width: 768px) {
-      .position-controls {
-        bottom: 10px;
-        left: 10px;
-        gap: 5px;
-      }
-      .locate-btn, .stop-btn {
+      .position-controls { bottom: 10px; left: 10px; }
+      .locate-btn {
         font-size: 9pt;
         padding: 7px 10px;
         width: 140px;
@@ -204,10 +191,8 @@
     <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
-  <!-- Pulsanti posizione nell'angolo in basso a sinistra -->
   <div class="position-controls">
     <button class="locate-btn" onclick="trovaPosizione()">📍 Trova posizione</button>
-    <button class="stop-btn" onclick="fermaPosizione()">🛑 Stop tracciamento</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -296,46 +281,37 @@
       } else alert("Nessun punto trovato con questo nome.");
     }
 
-    let markerPosizione = null, cerchioPosizione = null, trackingAttivo = false, routingControl = null;
+    let markerPosizione = null, cerchioPosizione = null, watchId = null, routingControl = null;
 
-    function trovaPosizione() {
-      if (trackingAttivo) return;
-      trackingAttivo = true;
-      if (!navigator.geolocation) return alert("La geolocalizzazione non è supportata dal tuo browser.");
-
-      map.on('locationfound', (e) => {
-        const r = e.accuracy / 2;
-        if (markerPosizione) {
-          markerPosizione.setLatLng(e.latlng);
-          cerchioPosizione.setLatLng(e.latlng);
-          cerchioPosizione.setRadius(r);
-        } else {
-          markerPosizione = L.marker(e.latlng).addTo(map).bindPopup(`Sei qui (±${Math.round(r)} m)`).openPopup();
-          cerchioPosizione = L.circle(e.latlng, r, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
-        }
-      });
-
-      map.on('locationerror', () => alert("Impossibile determinare la posizione."));
-      map.locate({ setView: true, watch: true, maxZoom: 16, enableHighAccuracy: true });
+    function aggiornaPosizione(pos) {
+      const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      const precisione = Math.round(pos.coords.accuracy / 2);
+      if (!markerPosizione) {
+        markerPosizione = L.marker(latlng).addTo(map).bindPopup(`Sei qui (±${precisione} m)`);
+        cerchioPosizione = L.circle(latlng, precisione, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
+      } else {
+        markerPosizione.setLatLng(latlng);
+        cerchioPosizione.setLatLng(latlng);
+        cerchioPosizione.setRadius(precisione);
+      }
     }
 
-    function fermaPosizione() {
-      if (!trackingAttivo) return;
-      map.stopLocate();
-      trackingAttivo = false;
-      if (markerPosizione) map.removeLayer(markerPosizione);
-      if (cerchioPosizione) map.removeLayer(cerchioPosizione);
-      if (routingControl) map.removeControl(routingControl);
-      markerPosizione = cerchioPosizione = routingControl = null;
-      alert("Tracciamento interrotto.");
+    function trovaPosizione() {
+      if (!navigator.geolocation) return alert("La geolocalizzazione non è supportata dal tuo browser.");
+      navigator.geolocation.getCurrentPosition((pos) => {
+        aggiornaPosizione(pos);
+        map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+        if (!watchId)
+          watchId = navigator.geolocation.watchPosition(aggiornaPosizione);
+      });
     }
 
     function vaiA(destLat, destLon) {
       if (!navigator.geolocation) return alert("Geolocalizzazione non supportata dal browser.");
-
       navigator.geolocation.getCurrentPosition((pos) => {
         const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
         const end = L.latLng(destLat, destLon);
+
         if (routingControl) map.removeControl(routingControl);
 
         routingControl = L.Routing.control({
@@ -353,23 +329,9 @@
           position: 'topright'
         }).addTo(map);
 
-        // Pannello espandibile su mobile
-        setTimeout(() => {
-          const panel = document.querySelector('.leaflet-routing-container');
-          if (!panel) return;
-          panel.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-              if (panel.style.maxHeight === '80px' || !panel.style.maxHeight) {
-                panel.style.maxHeight = '400px';
-                panel.style.overflowY = 'scroll';
-              } else {
-                panel.style.maxHeight = '80px';
-                panel.scrollTop = 0;
-              }
-            }
-          });
-        }, 600);
-      }, () => alert("Impossibile determinare la tua posizione."));
+        if (!watchId)
+          watchId = navigator.geolocation.watchPosition(aggiornaPosizione);
+      });
     }
   </script>
 </body>
