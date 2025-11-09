@@ -20,7 +20,7 @@
       box-shadow: none !important;
     }
 
-    /* Etichette pulite */
+    /* Etichette */
     .leaflet-tooltip.label {
       background:none!important;
       border:none!important;
@@ -76,6 +76,18 @@
 
     /* Routing */
     .leaflet-routing-container { font-size:10pt; background:rgba(255,255,255,.95); border-radius:8px; }
+
+    /* ✅ Sposta box percorso in basso su mobile */
+    @media (max-width: 768px) {
+      .leaflet-routing-container {
+        position: absolute !important;
+        top: 90px !important;
+        right: 10px !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+      }
+    }
+
     .route-btn {
       background:#1d4ed8; color:#fff; border:none; border-radius:4px;
       padding:3px 6px; font-size:10pt; font-weight:700; cursor:pointer; margin-top:4px;
@@ -107,7 +119,6 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUtzzGur2XfSSuXeZ9z4U3158y5zuKI2Y&libraries=places"></script>
 
   <script>
-    // Mappa con controlli zoom personalizzati
     const map = L.map('map', { zoomControl: false }).setView([43.77, 11.25], 14);
     L.control.zoom({ position:'topleft' }).addTo(map);
 
@@ -116,7 +127,6 @@
       attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
     }).addTo(map);
 
-    // Punti d’interesse
     const punti = [
       ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "red", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760"],
       ["Il Latini", 43.77178234, 11.24922621, "red", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252"],
@@ -124,7 +134,6 @@
       ["I giardini di Boboli", 43.76255141, 11.24836741, "blue", "https://www.uffizi.it/giardino-boboli"]
     ];
 
-    // Marker puliti (senza bordo)
     function coloredIcon(color) {
       return L.divIcon({
         html: `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='40' viewBox='0 0 24 40'>
@@ -132,7 +141,7 @@
                </svg>`,
         iconSize: [24, 40],
         iconAnchor: [12, 40],
-        className: '' // <-- nessuna classe di default = nessun rettangolo!
+        className: ''
       });
     }
 
@@ -147,7 +156,6 @@
     const group = L.featureGroup(markers.map(m => m.marker));
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // Geolocalizzazione
     let markerPosizione = null, cerchioPosizione = null, watchId = null, routingControl = null;
 
     function aggiornaPosizione(pos) {
@@ -168,7 +176,6 @@
       if (!watchId) watchId = navigator.geolocation.watchPosition(aggiornaPosizione);
     }
 
-    // Routing
     const osrmRouter = new L.Routing.OSRMv1({
       serviceUrl: 'https://router.project-osrm.org/route/v1',
       profile: 'driving'
@@ -190,7 +197,6 @@
       }, () => alert("Impossibile determinare la tua posizione."));
     }
 
-    // Ricerca integrata Google Places + punti locali
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
     document.getElementById('ricerca').addEventListener('input', aggiornaSuggerimenti);
 
