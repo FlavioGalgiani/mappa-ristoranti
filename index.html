@@ -42,24 +42,6 @@
       z-index: 1000;
     }
 
-    .locate-btn, .stop-btn {
-      position: absolute;
-      right: 15px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      font-weight: 600;
-      font-size: 8pt;
-      z-index: 1000;
-    }
-
-    .locate-btn { top: 15px; color: #1d4ed8; }
-    .stop-btn { top: 55px; color: #dc2626; }
-    .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
-
     .search-box {
       position: absolute;
       top: 15px;
@@ -109,6 +91,7 @@
     }
     .suggestions div:hover { background: #f0f0f0; }
 
+    /* Pannello direzioni */
     .leaflet-routing-container {
       font-family: Arial, sans-serif;
       font-size: 8pt;
@@ -151,9 +134,35 @@
     }
     .route-btn:hover { background: #2563eb; }
 
+    /* Pulsanti posizione - spostati in basso a sinistra */
+    .position-controls {
+      position: absolute;
+      bottom: 85px;
+      left: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1000;
+    }
+    .locate-btn, .stop-btn {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-weight: 600;
+      font-size: 8pt;
+      width: 120px;
+    }
+    .locate-btn { color: #1d4ed8; }
+    .stop-btn { color: #dc2626; }
+    .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
+
+    /* Pulsanti zoom sopra */
     .leaflet-control-zoom {
       position: absolute !important;
-      top: 80px !important;
+      bottom: 15px !important;
       left: 15px !important;
       z-index: 1000 !important;
     }
@@ -176,8 +185,11 @@
     <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
-  <button class="locate-btn" onclick="trovaPosizione()">📍 Trova la mia posizione</button>
-  <button class="stop-btn" onclick="fermaPosizione()">🛑 Stop tracciamento</button>
+  <!-- pulsanti posizione spostati in basso -->
+  <div class="position-controls">
+    <button class="locate-btn" onclick="trovaPosizione()">📍 Trova posizione</button>
+    <button class="stop-btn" onclick="fermaPosizione()">🛑 Stop tracciamento</button>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
