@@ -6,7 +6,12 @@
   <title>Mappa ristoranti e punti d'interesse Firenze</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
-    html, body { height: 100%; margin: 0; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
+    }
     #map { height: 100vh; }
 
     .leaflet-tooltip.label {
@@ -17,6 +22,8 @@
       padding: 2px 6px;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
     }
 
     .legend {
@@ -27,10 +34,11 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 6px 10px;
-      font-size: 14px;
+      font-size: 8pt;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      line-height: 1.5;
+      line-height: 1.4;
       z-index: 1000;
+      font-family: Arial, sans-serif;
     }
 
     .locate-btn, .stop-btn {
@@ -39,25 +47,19 @@
       background: white;
       border: 1px solid #ccc;
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 10px;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-weight: 600;
       z-index: 1000;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
     }
 
-    .locate-btn {
-      top: 15px;
-      color: #1d4ed8;
-    }
-    .stop-btn {
-      top: 60px;
-      color: #dc2626;
-    }
+    .locate-btn { top: 15px; color: #1d4ed8; }
+    .stop-btn { top: 55px; color: #dc2626; }
 
-    .locate-btn:hover, .stop-btn:hover {
-      background: #f0f0f0;
-    }
+    .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
 
     .search-box {
       position: absolute;
@@ -72,19 +74,22 @@
       display: flex;
       flex-direction: column;
       width: 200px;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
     }
 
     .search-input {
       display: flex;
-      gap: 6px;
+      gap: 4px;
     }
 
     .search-input input {
       border: 1px solid #ccc;
       border-radius: 4px;
-      padding: 5px 8px;
-      font-size: 14px;
+      padding: 4px 6px;
+      font-size: 8pt;
       flex: 1;
+      font-family: Arial, sans-serif;
     }
 
     .search-input button {
@@ -92,31 +97,29 @@
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 6px 10px;
+      padding: 4px 8px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 8pt;
+      font-family: Arial, sans-serif;
     }
 
-    .search-input button:hover {
-      background: #2563eb;
-    }
+    .search-input button:hover { background: #2563eb; }
 
     .suggestions {
       margin-top: 4px;
       border-top: 1px solid #ddd;
       max-height: 150px;
       overflow-y: auto;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
     }
 
     .suggestions div {
-      padding: 5px 8px;
+      padding: 4px 6px;
       cursor: pointer;
-      font-size: 14px;
     }
 
-    .suggestions div:hover {
-      background: #f0f0f0;
-    }
+    .suggestions div:hover { background: #f0f0f0; }
   </style>
 </head>
 <body>
@@ -179,7 +182,7 @@
     punti.forEach(([nome, lat, lon, colore, link]) => {
       let color = (colore === "verde") ? "green" : (colore === "blu" ? "blue" : "red");
       const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
-      marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] }).openTooltip();
+      marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] });
       marker.bindPopup(`<strong>${nome}</strong><br><a href="${link}" target="_blank">Apri sito</a>`);
       markers.push({ nome, marker });
     });
@@ -203,7 +206,7 @@
           map.setView(r.marker.getLatLng(), 17);
           r.marker.openPopup();
           box.innerHTML = '';
-          document.getElementById('ricerca').value = r.nome;
+          document.getElementById('ricerca').value = '';
         };
         box.appendChild(div);
       });
@@ -216,6 +219,8 @@
       if (trovato) {
         map.setView(trovato.marker.getLatLng(), 17);
         trovato.marker.openPopup();
+        document.getElementById('ricerca').value = '';
+        document.getElementById('suggerimenti').innerHTML = '';
       } else {
         alert("Nessun punto trovato con questo nome.");
       }
