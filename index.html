@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mappa ristoranti e punti d'interesse Firenze</title>
+  <title>Mappa Firenze</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
@@ -103,7 +103,7 @@
     .leaflet-routing-container {
       font-family: Arial, sans-serif;
       font-size: 8pt;
-      margin-top: 90px !important; /* Sposta il box di navigazione più in basso */
+      margin-top: 90px !important;
     }
 
     .route-btn {
@@ -118,7 +118,6 @@
     }
     .route-btn:hover { background: #2563eb; }
 
-    /* Pulsanti zoom sotto la barra di ricerca */
     .leaflet-control-zoom {
       position: absolute !important;
       top: 80px !important;
@@ -126,7 +125,6 @@
       z-index: 1000 !important;
     }
 
-    /* Box per scelta percorso */
     .route-choice {
       position: absolute;
       bottom: 25px;
@@ -231,7 +229,7 @@
     const group = L.featureGroup(markers.map(m => m.marker));
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // --- RICERCA LIVE ---
+    // --- RICERCA ---
     function aggiornaSuggerimenti() {
       const input = document.getElementById('ricerca').value.trim().toLowerCase();
       const box = document.getElementById('suggerimenti');
@@ -267,7 +265,7 @@
       }
     }
 
-    // --- POSIZIONE E PERCORSO ---
+    // --- POSIZIONE & PERCORSO ---
     let markerPosizione = null, cerchioPosizione = null, trackingAttivo = false, routingControl = null, routeChoiceBox = null;
 
     function trovaPosizione() {
@@ -304,7 +302,6 @@
       alert("Tracciamento interrotto.");
     }
 
-    // --- SCELTA PERCORSO MODERNA ---
     function vaiA(destLat, destLon) {
       if (!navigator.geolocation) {
         alert("Geolocalizzazione non supportata.");
@@ -340,7 +337,7 @@
         routingControl = L.Routing.control({
           waypoints: [start, end],
           router: L.Routing.osrmv1({
-            serviceUrl: `https://router.project-osrm.org/route/v1/${profilo}`
+            serviceUrl: `https://routing.openstreetmap.de/routed-${profilo}/route/v1/${profilo}`
           }),
           lineOptions: { styles: [{ color: '#1d4ed8', opacity: 0.8, weight: 5 }] },
           routeWhileDragging: false,
