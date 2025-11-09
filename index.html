@@ -8,6 +8,7 @@
   <style>
     html, body { height: 100%; margin: 0; }
     #map { height: 100vh; }
+
     .leaflet-tooltip.label {
       background: rgba(255,255,255,0.9);
       border: 1px solid #ccc;
@@ -17,6 +18,7 @@
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
+
     .legend {
       position: absolute;
       bottom: 15px;
@@ -29,26 +31,48 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       line-height: 1.5;
     }
+
+    .locate-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-weight: 600;
+      color: #1d4ed8;
+    }
+
+    .locate-btn:hover {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+
   <div class="legend">
     <span style="color:red;">&#9679;</span> Ristoranti<br>
     <span style="color:green;">&#9679;</span> Hotel<br>
     <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
+  <button class="locate-btn" onclick="trovaPosizione()">📍 Trova la mia posizione</button>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const map = L.map('map').setView([43.77, 11.25], 14);
 
-    // Sfondo bianco e nero (CartoDB Positron - libero e stabile)
+    // 🗺️ Sfondo bianco e nero (CartoDB Positron - libero e stabile)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
       attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
     }).addTo(map);
 
+    // 📍 Tutti i punti con link cliccabili
     const punti = [
       ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760-Reviews-Osteria_Vini_e_Vecchi_Sapori-Florence_Tuscany.html"],
       ["Il Latini", 43.77178234, 11.24922621, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252-Reviews-Il_Latini-Florence_Tuscany.html"],
@@ -63,7 +87,7 @@
       ["Parco dei Giochi di Legno", 43.7701264, 11.22673691, "blu", "https://mindtrip.ai/attraction/florence-tuscany/parco-dei-giochi-di-legno/at-Gm5JMNHC"]
     ];
 
-    // Funzione per creare icone colorate
+    // 🎨 Funzione per creare icone colorate SVG
     function coloredIcon(color) {
       return L.divIcon({
         className: "",
@@ -77,6 +101,7 @@
       });
     }
 
+    // ➕ Aggiunta marker
     const markers = [];
     punti.forEach(([nome, lat, lon, colore, link]) => {
       let color = "red";
@@ -84,23 +109,36 @@
       if (colore === "blu") color = "blue";
 
       const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
-
-      // Tooltip fisso
       marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] }).openTooltip();
-
-      // Popup cliccabile con link
-      if (link) {
-        marker.bindPopup(`<strong>${nome}</strong><br><a href="${link}" target="_blank">Apri sito</a>`);
-      } else {
-        marker.bindPopup(`<strong>${nome}</strong>`);
-      }
-
+      marker.bindPopup(`<strong>${nome}</strong><br><a href="${link}" target="_blank">Apri sito</a>`);
       markers.push(marker);
     });
 
-    // Adatta la vista a tutti i punti
     const group = L.featureGroup(markers);
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
+
+    // 📍 Pulsante: trova la posizione utente
+    function trovaPosizione() {
+      if (!navigator.geolocation) {
+        alert("La geolocalizzazione non è supportata dal tuo browser.");
+        return;
+      }
+
+      map.once('locationfound', (e) => {
+        const radius = e.accuracy / 2;
+        L.marker(e.latlng)
+          .addTo(map)
+          .bindPopup(`Sei qui (±${Math.round(radius)} m)`).openPopup();
+        L.circle(e.latlng, radius, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
+        map.setView(e.latlng, 16);
+      });
+
+      map.once('locationerror', () => {
+        alert("Impossibile determinare la posizione.");
+      });
+
+      map.locate({ setView: true, maxZoom: 16 });
+    }
   </script>
 </body>
 </html>
