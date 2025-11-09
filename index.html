@@ -70,19 +70,24 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       padding: 6px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      width: 200px;
+    }
+
+    .search-input {
+      display: flex;
       gap: 6px;
     }
 
-    .search-box input {
+    .search-input input {
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 5px 8px;
       font-size: 14px;
-      width: 160px;
+      flex: 1;
     }
 
-    .search-box button {
+    .search-input button {
       background: #1d4ed8;
       color: white;
       border: none;
@@ -92,8 +97,25 @@
       font-size: 14px;
     }
 
-    .search-box button:hover {
+    .search-input button:hover {
       background: #2563eb;
+    }
+
+    .suggestions {
+      margin-top: 4px;
+      border-top: 1px solid #ddd;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .suggestions div {
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .suggestions div:hover {
+      background: #f0f0f0;
     }
   </style>
 </head>
@@ -101,8 +123,11 @@
   <div id="map"></div>
 
   <div class="search-box">
-    <input type="text" id="ricerca" placeholder="Cerca un punto..." />
-    <button onclick="cercaPunto()">Cerca</button>
+    <div class="search-input">
+      <input type="text" id="ricerca" placeholder="Cerca un punto..." oninput="aggiornaSuggerimenti()" />
+      <button onclick="cercaPunto()">Cerca</button>
+    </div>
+    <div id="suggerimenti" class="suggestions"></div>
   </div>
 
   <div class="legend">
@@ -162,11 +187,31 @@
     const group = L.featureGroup(markers.map(m => m.marker));
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // --- RICERCA PUNTI ---
+    // --- RICERCA LIVE ---
+    function aggiornaSuggerimenti() {
+      const input = document.getElementById('ricerca').value.trim().toLowerCase();
+      const box = document.getElementById('suggerimenti');
+      box.innerHTML = '';
+
+      if (!input) return;
+
+      const risultati = markers.filter(m => m.nome.toLowerCase().includes(input));
+      risultati.forEach(r => {
+        const div = document.createElement('div');
+        div.textContent = r.nome;
+        div.onclick = () => {
+          map.setView(r.marker.getLatLng(), 17);
+          r.marker.openPopup();
+          box.innerHTML = '';
+          document.getElementById('ricerca').value = r.nome;
+        };
+        box.appendChild(div);
+      });
+    }
+
     function cercaPunto() {
       const input = document.getElementById('ricerca').value.trim().toLowerCase();
       if (!input) return;
-
       const trovato = markers.find(m => m.nome.toLowerCase().includes(input));
       if (trovato) {
         map.setView(trovato.marker.getLatLng(), 17);
