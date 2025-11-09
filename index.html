@@ -25,7 +25,6 @@
       padding: 2px 6px;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
@@ -41,7 +40,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       line-height: 1.4;
       z-index: 1000;
-      font-family: Arial, sans-serif;
     }
 
     .locate-btn, .stop-btn {
@@ -55,13 +53,11 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-weight: 600;
       z-index: 1000;
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
     .locate-btn { top: 15px; color: #1d4ed8; }
     .stop-btn { top: 55px; color: #dc2626; }
-
     .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
 
     .search-box {
@@ -77,24 +73,17 @@
       display: flex;
       flex-direction: column;
       width: 200px;
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
-    .search-input {
-      display: flex;
-      gap: 4px;
-    }
-
+    .search-input { display: flex; gap: 4px; }
     .search-input input {
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 4px 6px;
       font-size: 8pt;
       flex: 1;
-      font-family: Arial, sans-serif;
     }
-
     .search-input button {
       background: #1d4ed8;
       color: white;
@@ -103,9 +92,7 @@
       padding: 4px 8px;
       cursor: pointer;
       font-size: 8pt;
-      font-family: Arial, sans-serif;
     }
-
     .search-input button:hover { background: #2563eb; }
 
     .suggestions {
@@ -113,20 +100,18 @@
       border-top: 1px solid #ddd;
       max-height: 150px;
       overflow-y: auto;
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
-
     .suggestions div {
       padding: 4px 6px;
       cursor: pointer;
     }
-
     .suggestions div:hover { background: #f0f0f0; }
 
     .leaflet-routing-container {
       font-family: Arial, sans-serif;
       font-size: 8pt;
+      margin-top: 70px !important; /* spostato sotto pulsanti posizione */
     }
 
     .route-btn {
@@ -139,10 +124,7 @@
       font-size: 8pt;
       margin-top: 3px;
     }
-
-    .route-btn:hover {
-      background: #2563eb;
-    }
+    .route-btn:hover { background: #2563eb; }
   </style>
 </head>
 <body>
@@ -170,7 +152,6 @@
 
   <script>
     const map = L.map('map').setView([43.77, 11.25], 14);
-
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
       attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
@@ -205,13 +186,13 @@
 
     const markers = [];
     punti.forEach(([nome, lat, lon, colore, link]) => {
-      let color = (colore === "verde") ? "green" : (colore === "blu" ? "blue" : "red");
+      const color = (colore === "verde") ? "green" : (colore === "blu" ? "blue" : "red");
       const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
       marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] });
       marker.bindPopup(`
         <strong>${nome}</strong><br>
         <a href="${link}" target="_blank">Apri sito</a><br>
-        <button class="route-btn" onclick="vaiA(${lat}, ${lon})">Vai 🚶‍♂️</button>
+        <button class="route-btn" onclick="vaiA(${lat}, ${lon})">Vai 🚗</button>
       `);
       markers.push({ nome, marker });
     });
@@ -219,16 +200,14 @@
     const group = L.featureGroup(markers.map(m => m.marker));
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // --- RICERCA LIVE ---
+    // Ricerca live
     function aggiornaSuggerimenti() {
       const input = document.getElementById('ricerca').value.trim().toLowerCase();
       const box = document.getElementById('suggerimenti');
       box.innerHTML = '';
-
       if (!input) return;
 
-      const risultati = markers.filter(m => m.nome.toLowerCase().includes(input));
-      risultati.forEach(r => {
+      markers.filter(m => m.nome.toLowerCase().includes(input)).forEach(r => {
         const div = document.createElement('div');
         div.textContent = r.nome;
         div.onclick = () => {
@@ -248,43 +227,30 @@
       if (trovato) {
         map.setView(trovato.marker.getLatLng(), 17);
         trovato.marker.openPopup();
-        document.getElementById('ricerca').value = '';
-        document.getElementById('suggerimenti').innerHTML = '';
-      } else {
-        alert("Nessun punto trovato con questo nome.");
       }
+      document.getElementById('ricerca').value = '';
+      document.getElementById('suggerimenti').innerHTML = '';
     }
 
-    // --- GESTIONE POSIZIONE CONTINUA ---
-    let markerPosizione = null;
-    let cerchioPosizione = null;
-    let trackingAttivo = false;
-    let routingControl = null;
+    // Posizione
+    let markerPosizione = null, cerchioPosizione = null, trackingAttivo = false, routingControl = null;
 
     function trovaPosizione() {
       if (trackingAttivo) return;
       trackingAttivo = true;
+      if (!navigator.geolocation) return alert("La geolocalizzazione non è supportata.");
 
-      if (!navigator.geolocation) {
-        alert("La geolocalizzazione non è supportata dal tuo browser.");
-        return;
-      }
-
-      map.on('locationfound', (e) => {
-        const radius = e.accuracy / 2;
-        if (markerPosizione && cerchioPosizione) {
+      map.on('locationfound', e => {
+        const r = e.accuracy / 2;
+        if (markerPosizione) {
           markerPosizione.setLatLng(e.latlng);
           cerchioPosizione.setLatLng(e.latlng);
-          cerchioPosizione.setRadius(radius);
+          cerchioPosizione.setRadius(r);
         } else {
-          markerPosizione = L.marker(e.latlng)
-            .addTo(map)
-            .bindPopup(`Sei qui (±${Math.round(radius)} m)`).openPopup();
-          cerchioPosizione = L.circle(e.latlng, radius, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
+          markerPosizione = L.marker(e.latlng).addTo(map).bindPopup(`Sei qui (±${Math.round(r)} m)`).openPopup();
+          cerchioPosizione = L.circle(e.latlng, r, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
         }
       });
-
-      map.on('locationerror', () => alert("Impossibile determinare la posizione."));
       map.locate({ setView: true, watch: true, maxZoom: 16, enableHighAccuracy: true });
     }
 
@@ -294,39 +260,33 @@
       trackingAttivo = false;
       if (markerPosizione) map.removeLayer(markerPosizione);
       if (cerchioPosizione) map.removeLayer(cerchioPosizione);
+      if (routingControl) map.removeControl(routingControl);
       markerPosizione = null;
       cerchioPosizione = null;
-      if (routingControl) map.removeControl(routingControl);
       routingControl = null;
       alert("Tracciamento interrotto.");
     }
 
-    // --- FUNZIONE VAI (calcolo percorso a piedi) ---
+    // Vai (AUTO di default)
     function vaiA(destLat, destLon) {
-      if (!navigator.geolocation) {
-        alert("Geolocalizzazione non supportata dal browser.");
-        return;
-      }
-
+      if (!navigator.geolocation) return alert("Geolocalizzazione non supportata.");
       navigator.geolocation.getCurrentPosition(pos => {
         const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
         const end = L.latLng(destLat, destLon);
-
         if (routingControl) map.removeControl(routingControl);
-
         routingControl = L.Routing.control({
           waypoints: [start, end],
-          router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+          router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1/driving' }),
           lineOptions: { styles: [{ color: '#1d4ed8', opacity: 0.8, weight: 5 }] },
           routeWhileDragging: false,
           show: true,
           addWaypoints: false,
           draggableWaypoints: false,
           fitSelectedRoutes: true,
-          language: 'it'
+          language: 'it',
+          position: 'topright'
         }).addTo(map);
-      },
-      () => alert("Impossibile determinare la tua posizione."));
+      }, () => alert("Impossibile determinare la tua posizione."));
     }
   </script>
 </body>
