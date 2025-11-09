@@ -9,12 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      font-size: 8pt;
-    }
+    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; font-size: 8pt; }
     #map { height: 100vh; }
 
     .leaflet-tooltip.label {
@@ -25,7 +20,6 @@
       padding: 2px 6px;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
@@ -41,7 +35,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       line-height: 1.4;
       z-index: 1000;
-      font-family: Arial, sans-serif;
     }
 
     .locate-btn, .stop-btn {
@@ -55,7 +48,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-weight: 600;
       z-index: 1000;
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
@@ -77,24 +69,17 @@
       display: flex;
       flex-direction: column;
       width: 200px;
-      font-family: Arial, sans-serif;
       font-size: 8pt;
     }
 
-    .search-input {
-      display: flex;
-      gap: 4px;
-    }
-
+    .search-input { display: flex; gap: 4px; }
     .search-input input {
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 4px 6px;
       font-size: 8pt;
       flex: 1;
-      font-family: Arial, sans-serif;
     }
-
     .search-input button {
       background: #1d4ed8;
       color: white;
@@ -103,9 +88,7 @@
       padding: 4px 8px;
       cursor: pointer;
       font-size: 8pt;
-      font-family: Arial, sans-serif;
     }
-
     .search-input button:hover { background: #2563eb; }
 
     .suggestions {
@@ -113,20 +96,14 @@
       border-top: 1px solid #ddd;
       max-height: 150px;
       overflow-y: auto;
-      font-family: Arial, sans-serif;
-      font-size: 8pt;
     }
-
-    .suggestions div {
-      padding: 4px 6px;
-      cursor: pointer;
-    }
-
+    .suggestions div { padding: 4px 6px; cursor: pointer; }
     .suggestions div:hover { background: #f0f0f0; }
 
     .leaflet-routing-container {
       font-family: Arial, sans-serif;
       font-size: 8pt;
+      margin-top: 90px !important; /* Sposta il box di navigazione più in basso */
     }
 
     .route-btn {
@@ -139,9 +116,14 @@
       font-size: 8pt;
       margin-top: 3px;
     }
+    .route-btn:hover { background: #2563eb; }
 
-    .route-btn:hover {
-      background: #2563eb;
+    /* Sposta i pulsanti zoom sotto la barra di ricerca */
+    .leaflet-control-zoom {
+      position: absolute !important;
+      top: 80px !important;
+      left: 15px !important;
+      z-index: 1000 !important;
     }
   </style>
 </head>
@@ -211,7 +193,7 @@
       marker.bindPopup(`
         <strong>${nome}</strong><br>
         <a href="${link}" target="_blank">Apri sito</a><br>
-        <button class="route-btn" onclick="vaiA(${lat}, ${lon})">Vai 🚶‍♂️</button>
+        <button class="route-btn" onclick="vaiA(${lat}, ${lon})">Vai 🚗🚶‍♂️</button>
       `);
       markers.push({ nome, marker });
     });
@@ -255,11 +237,8 @@
       }
     }
 
-    // --- GESTIONE POSIZIONE CONTINUA ---
-    let markerPosizione = null;
-    let cerchioPosizione = null;
-    let trackingAttivo = false;
-    let routingControl = null;
+    // --- POSIZIONE E PERCORSO ---
+    let markerPosizione = null, cerchioPosizione = null, trackingAttivo = false, routingControl = null;
 
     function trovaPosizione() {
       if (trackingAttivo) return;
@@ -277,14 +256,11 @@
           cerchioPosizione.setLatLng(e.latlng);
           cerchioPosizione.setRadius(radius);
         } else {
-          markerPosizione = L.marker(e.latlng)
-            .addTo(map)
-            .bindPopup(`Sei qui (±${Math.round(radius)} m)`).openPopup();
+          markerPosizione = L.marker(e.latlng).addTo(map).bindPopup(`Sei qui (±${Math.round(radius)} m)`).openPopup();
           cerchioPosizione = L.circle(e.latlng, radius, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
         }
       });
 
-      map.on('locationerror', () => alert("Impossibile determinare la posizione."));
       map.locate({ setView: true, watch: true, maxZoom: 16, enableHighAccuracy: true });
     }
 
@@ -294,19 +270,19 @@
       trackingAttivo = false;
       if (markerPosizione) map.removeLayer(markerPosizione);
       if (cerchioPosizione) map.removeLayer(cerchioPosizione);
-      markerPosizione = null;
-      cerchioPosizione = null;
       if (routingControl) map.removeControl(routingControl);
-      routingControl = null;
       alert("Tracciamento interrotto.");
     }
 
-    // --- FUNZIONE VAI (calcolo percorso a piedi) ---
+    // --- FUNZIONE VAI (auto o piedi) ---
     function vaiA(destLat, destLon) {
       if (!navigator.geolocation) {
-        alert("Geolocalizzazione non supportata dal browser.");
+        alert("Geolocalizzazione non supportata.");
         return;
       }
+
+      const tipo = prompt("Vuoi calcolare il percorso in auto o a piedi? (scrivi 'auto' o 'piedi')", "piedi");
+      const profilo = (tipo && tipo.toLowerCase() === 'auto') ? 'driving' : 'walking';
 
       navigator.geolocation.getCurrentPosition(pos => {
         const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
@@ -316,14 +292,15 @@
 
         routingControl = L.Routing.control({
           waypoints: [start, end],
-          router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+          router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1/${profilo}` }),
           lineOptions: { styles: [{ color: '#1d4ed8', opacity: 0.8, weight: 5 }] },
           routeWhileDragging: false,
           show: true,
           addWaypoints: false,
           draggableWaypoints: false,
           fitSelectedRoutes: true,
-          language: 'it'
+          language: 'it',
+          position: 'topright'
         }).addTo(map);
       },
       () => alert("Impossibile determinare la tua posizione."));
