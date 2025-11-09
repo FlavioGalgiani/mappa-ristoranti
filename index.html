@@ -3,26 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mappa ristoranti e punti d'interesse Firenze</title>
+  <title>Mappa Firenze</title>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
   <style>
-    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; font-size: 8pt; }
-    #map { height: 100vh; }
-
-    .leaflet-tooltip.label {
-      background: rgba(255,255,255,0.9);
-      border: 1px solid #ccc;
-      color: #111827;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      font-size: 8pt;
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      font-size: 10pt;
     }
 
+    #map { height: 100vh; }
+
+    /* Tooltip (etichette punti) */
+    .leaflet-tooltip.label {
+      background: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: #111827;
+      font-weight: bold;
+      font-size: 10pt;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+    }
+
+    /* Legenda */
     .legend {
       position: absolute;
       bottom: 15px;
@@ -30,31 +37,33 @@
       background: rgba(255,255,255,0.9);
       border: 1px solid #ccc;
       border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 8pt;
+      padding: 8px 10px;
+      font-size: 10pt;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      line-height: 1.4;
+      line-height: 1.5;
       z-index: 1000;
     }
 
+    /* Pulsante “Trovami” */
     .locate-btn {
       position: absolute;
-      bottom: 80px;
+      bottom: 25px;
       left: 15px;
       background: white;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 6px 10px;
+      border-radius: 8px;
+      padding: 8px 12px;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      font-weight: 600;
-      z-index: 1000;
-      font-size: 8pt;
+      font-weight: bold;
       color: #1d4ed8;
+      font-size: 10pt;
+      z-index: 1000;
     }
 
-    .locate-btn:hover { background: #f0f0f0; }
+    .locate-btn:hover { background: #f3f4f6; }
 
+    /* Barra di ricerca */
     .search-box {
       position: absolute;
       top: 15px;
@@ -67,16 +76,19 @@
       padding: 6px;
       display: flex;
       flex-direction: column;
-      width: 230px;
+      width: 270px;
     }
 
-    .search-input { display: flex; gap: 4px; }
+    .search-input {
+      display: flex;
+      gap: 4px;
+    }
 
     .search-input input {
       border: 1px solid #ccc;
       border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 8pt;
+      padding: 5px 6px;
+      font-size: 10pt;
       flex: 1;
     }
 
@@ -85,43 +97,54 @@
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 4px 8px;
+      padding: 5px 10px;
       cursor: pointer;
-      font-size: 8pt;
+      font-size: 10pt;
+      font-weight: bold;
     }
 
     .search-input button:hover { background: #2563eb; }
 
+    /* Suggerimenti */
     .suggestions {
       margin-top: 4px;
       border-top: 1px solid #ddd;
       max-height: 200px;
       overflow-y: auto;
-      font-size: 8pt;
+      font-size: 10pt;
     }
 
-    .suggestions div { padding: 4px 6px; cursor: pointer; }
-    .suggestions div:hover { background: #f0f0f0; }
+    .suggestions div { padding: 5px 6px; cursor: pointer; }
+    .suggestions div:hover { background: #f3f4f6; }
 
     .category-header {
       font-weight: bold;
       color: #1d4ed8;
       background: #f9fafb;
-      padding: 3px 6px;
+      padding: 4px 6px;
       border-bottom: 1px solid #ddd;
     }
 
-    .leaflet-routing-container { font-size: 8pt; }
+    .leaflet-routing-container { font-size: 10pt; }
+
     .route-btn {
-      background: #1d4ed8; color: white; border: none; border-radius: 4px;
-      padding: 2px 6px; cursor: pointer; font-size: 8pt; margin-top: 3px;
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 6px;
+      cursor: pointer;
+      font-size: 10pt;
+      margin-top: 4px;
     }
+
     .route-btn:hover { background: #2563eb; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
+  <!-- Barra di ricerca -->
   <div class="search-box">
     <div class="search-input">
       <input type="text" id="ricerca" placeholder="Cerca un punto..." />
@@ -130,57 +153,63 @@
     <div id="suggerimenti" class="suggestions"></div>
   </div>
 
+  <!-- Legenda -->
   <div class="legend">
-    <span style="color:red;">&#9679;</span> Ristoranti<br>
-    <span style="color:green;">&#9679;</span> Hotel<br>
-    <span style="color:blue;">&#9679;</span> Parchi e giardini
+    <span style="color:red;">●</span> Ristoranti<br>
+    <span style="color:green;">●</span> Hotel<br>
+    <span style="color:blue;">●</span> Parchi e giardini
   </div>
 
-  <button class="locate-btn" onclick="trovaPosizione()">📍 Trova posizione</button>
+  <!-- Pulsante Trovami -->
+  <button class="locate-btn" onclick="trovaPosizione()">📍 Trovami</button>
 
-  <!-- Script Leaflet + Routing -->
+  <!-- Leaflet + Routing -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
-  <!-- Script Google Maps -->
+  <!-- Google Places -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUtzzGur2XfSSuXeZ9z4U3158y5zuKI2Y&libraries=places"></script>
 
   <script>
-    const map = L.map('map').setView([43.77, 11.25], 14);
+    const map = L.map('map', { zoomControl: false }).setView([43.77, 11.25], 14);
+
+    // Sposta lo zoom sotto la barra di ricerca
+    L.control.zoom({ position: 'topleft' }).addTo(map);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
-      attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
+      attribution: '&copy; OpenStreetMap contributors &copy; CartoDB'
     }).addTo(map);
 
     const punti = [
-      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760"],
-      ["Il Latini", 43.77178234, 11.24922621, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252"],
-      ["ARTE' BOUTIQUE HOTEL FIRENZE", 43.77572356, 11.25666108, "verde", "https://it.tripadvisor.ch/Hotel_Review-g187895-d17336552"],
-      ["I giardini di Boboli", 43.76255141, 11.24836741, "blu", "https://www.uffizi.it/giardino-boboli"]
+      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "red", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760"],
+      ["Il Latini", 43.77178234, 11.24922621, "red", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252"],
+      ["ARTE' BOUTIQUE HOTEL FIRENZE", 43.77572356, 11.25666108, "green", "https://it.tripadvisor.ch/Hotel_Review-g187895-d17336552"],
+      ["I giardini di Boboli", 43.76255141, 11.24836741, "blue", "https://www.uffizi.it/giardino-boboli"]
     ];
 
+    // Icone colorate
     function coloredIcon(color) {
       return L.divIcon({
-        html: `<svg xmlns='http://www.w3.org/2000/svg' width='25' height='41'><path d='M12.5 0C5.6 0 0 5.6 0 12.5C0 22 12.5 41 12.5 41C12.5 41 25 22 25 12.5C25 5.6 19.4 0 12.5 0Z' fill='${color}' stroke='black' stroke-width='1'/></svg>`,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
+        html: `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='40'><path d='M12 0C5 0 0 5 0 12c0 9 12 28 12 28s12-19 12-28C24 5 19 0 12 0z' fill='${color}' stroke='black' stroke-width='1'/></svg>`,
+        iconSize: [24, 40],
+        iconAnchor: [12, 40],
       });
     }
 
     const markers = [];
     punti.forEach(([nome, lat, lon, colore, link]) => {
-      const color = colore === "verde" ? "green" : (colore === "blu" ? "blue" : "red");
-      const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
+      const marker = L.marker([lat, lon], { icon: coloredIcon(colore) }).addTo(map);
       marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label' });
       marker.bindPopup(`<strong>${nome}</strong><br><a href="${link}" target="_blank">Apri sito</a><br><button class="route-btn" onclick="vaiA(${lat},${lon})">Vai 🚗</button>`);
       markers.push({ nome, marker });
     });
 
+    // Fit iniziale
     const group = L.featureGroup(markers.map(m => m.marker));
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
 
-    // GESTIONE GEOLOCALIZZAZIONE
+    // Posizione utente
     let markerPosizione = null;
     let cerchioPosizione = null;
     let routingControl = null;
@@ -200,7 +229,7 @@
       }, () => alert("Impossibile determinare la posizione"), { enableHighAccuracy: true });
     }
 
-    // NAVIGAZIONE
+    // Navigazione
     function vaiA(destLat, destLon) {
       navigator.geolocation.getCurrentPosition(pos => {
         const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
@@ -215,7 +244,7 @@
       });
     }
 
-    // RICERCA INTEGRATA GOOGLE + DATI LOCALI
+    // Ricerca Google
     const service = new google.maps.places.PlacesService(document.createElement('div'));
     document.getElementById('ricerca').addEventListener('input', aggiornaSuggerimenti);
 
@@ -225,20 +254,23 @@
       box.innerHTML = '';
       if (!q) return;
 
-      // risultati locali
       const locali = markers.filter(m => m.nome.toLowerCase().includes(q.toLowerCase()));
       if (locali.length) {
-        const h = document.createElement('div'); h.textContent = "Risultati personalizzati"; h.className = 'category-header';
+        const h = document.createElement('div');
+        h.textContent = "Risultati personalizzati";
+        h.className = 'category-header';
         box.appendChild(h);
         locali.forEach(r => {
-          const d = document.createElement('div'); d.textContent = r.nome;
+          const d = document.createElement('div');
+          d.textContent = r.nome;
           d.onclick = () => { map.setView(r.marker.getLatLng(), 17); r.marker.openPopup(); box.innerHTML = ''; };
           box.appendChild(d);
         });
       }
 
-      // risultati Google
-      const gh = document.createElement('div'); gh.textContent = "Risultati Google Maps"; gh.className = 'category-header';
+      const gh = document.createElement('div');
+      gh.textContent = "Risultati Google Maps";
+      gh.className = 'category-header';
       box.appendChild(gh);
       service.textSearch({ query: q, location: { lat: 43.77, lng: 11.25 }, radius: 5000 }, (results, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
