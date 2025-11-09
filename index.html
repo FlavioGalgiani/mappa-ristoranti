@@ -1,360 +1,230 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mappa ristoranti e punti d'interesse Firenze</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mappa Firenze</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" crossorigin="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css">
 
   <style>
-    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; font-size: 8pt; }
-    #map { height: 100vh; }
+    html, body { height:100%; margin:0; font-family:Arial,sans-serif; font-size:8pt; }
+    #map { height:100vh; }
 
     .leaflet-tooltip.label {
-      background: rgba(255,255,255,0.9);
-      border: 1px solid #ccc;
-      color: #111827;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      font-size: 8pt;
+      background:rgba(255,255,255,0.9);
+      border:1px solid #ccc;
+      border-radius:6px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.08);
+      font-weight:600;
+      padding:2px 6px;
+      font-size:8pt;
     }
 
     .legend {
-      position: absolute;
-      bottom: 15px;
-      right: 15px;
-      background: rgba(255,255,255,0.9);
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 8pt;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      line-height: 1.4;
-      z-index: 1000;
+      position:absolute;
+      bottom:15px; right:15px;
+      background:rgba(255,255,255,0.9);
+      border:1px solid #ccc;
+      border-radius:8px;
+      padding:6px 10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      z-index:1000;
     }
 
     .locate-btn, .stop-btn {
-      position: absolute;
-      right: 15px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      font-weight: 600;
-      z-index: 1000;
-      font-size: 8pt;
+      position:absolute;
+      right:15px;
+      background:white;
+      border:1px solid #ccc;
+      border-radius:6px;
+      padding:6px 10px;
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,0.2);
+      font-weight:600;
+      z-index:1000;
     }
-    .locate-btn { top: 15px; color: #1d4ed8; }
-    .stop-btn { top: 55px; color: #dc2626; }
-    .locate-btn:hover, .stop-btn:hover { background: #f0f0f0; }
+    .locate-btn { top:15px; color:#1d4ed8; }
+    .stop-btn { top:55px; color:#dc2626; }
 
     .search-box {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      z-index: 1000;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      width: 200px;
-      font-size: 8pt;
+      position:absolute;
+      top:15px; left:15px;
+      z-index:1000;
+      background:white;
+      border:1px solid #ccc;
+      border-radius:6px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.2);
+      padding:6px;
+      width:200px;
+      font-size:8pt;
     }
-    .search-input { display: flex; gap: 4px; }
+
+    .search-input { display:flex; gap:4px; }
     .search-input input {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 8pt;
-      flex: 1;
+      flex:1; padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:8pt;
     }
     .search-input button {
-      background: #1d4ed8;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 8pt;
+      background:#1d4ed8; color:white; border:none; border-radius:4px; padding:4px 8px; font-size:8pt;
     }
-    .search-input button:hover { background: #2563eb; }
 
-    .suggestions {
-      margin-top: 4px;
-      border-top: 1px solid #ddd;
-      max-height: 150px;
-      overflow-y: auto;
+    .suggestions div { padding:4px 6px; cursor:pointer; }
+    .suggestions div:hover { background:#f0f0f0; }
+
+    .leaflet-control-zoom {
+      position:absolute!important;
+      top:80px!important; left:15px!important;
+      z-index:1000!important;
     }
-    .suggestions div { padding: 4px 6px; cursor: pointer; }
-    .suggestions div:hover { background: #f0f0f0; }
 
-    /* Sposta il pannello routing sotto i pulsanti in alto a destra */
     .leaflet-routing-container {
-      font-family: Arial, sans-serif;
-      font-size: 8pt;
-      margin-top: 90px !important; /* sotto i due pulsanti */
+      margin-top:70px!important; /* Sistemato per non coprire pulsanti */
+      font-size:8pt!important;
     }
 
     .route-btn {
-      background: #1d4ed8;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 2px 6px;
-      cursor: pointer;
-      font-size: 8pt;
-      margin-top: 3px;
-    }
-    .route-btn:hover { background: #2563eb; }
-
-    /* Pulsanti zoom sotto la barra di ricerca */
-    .leaflet-control-zoom {
-      position: absolute !important;
-      top: 80px !important;
-      left: 15px !important;
-      z-index: 1000 !important;
+      background:#1d4ed8; color:white; border:none; border-radius:4px;
+      padding:2px 6px; cursor:pointer; font-size:8pt; margin-top:3px;
     }
 
-    /* Box scelta percorso (piedi/auto) */
     .route-choice {
-      position: absolute;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,0.95);
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 8px 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      font-size: 8pt;
-      display: flex;
-      gap: 8px;
-      z-index: 1500;
-      align-items: center;
+      position:absolute;
+      bottom:25px; left:50%; transform:translateX(-50%);
+      background:rgba(255,255,255,0.95);
+      border:1px solid #ccc; border-radius:8px;
+      padding:8px 12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.15);
+      font-size:8pt;
+      display:flex; gap:8px; align-items:center;
+      z-index:1500;
     }
     .route-choice button {
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      padding: 6px 10px;
-      font-weight: bold;
-      font-size: 8pt;
+      border:none; border-radius:6px; cursor:pointer;
+      padding:6px 10px; font-weight:bold; font-size:8pt;
     }
-    .btn-walk { background: #2563eb; color: white; }
-    .btn-drive { background: #16a34a; color: white; }
-    .btn-walk:hover { background: #1e40af; }
-    .btn-drive:hover { background: #15803d; }
+    .btn-walk { background:#2563eb; color:white; }
+    .btn-drive { background:#16a34a; color:white; }
+    .btn-walk:hover { background:#1e40af; }
+    .btn-drive:hover { background:#15803d; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
-  <!-- Barra di ricerca -->
   <div class="search-box">
     <div class="search-input">
-      <input type="text" id="ricerca" placeholder="Cerca un punto..." oninput="aggiornaSuggerimenti()" />
+      <input id="ricerca" placeholder="Cerca un punto..." oninput="aggiornaSuggerimenti()">
       <button onclick="cercaPunto()">Cerca</button>
     </div>
     <div id="suggerimenti" class="suggestions"></div>
   </div>
 
-  <!-- Legenda -->
   <div class="legend">
     <span style="color:red;">&#9679;</span> Ristoranti<br>
     <span style="color:green;">&#9679;</span> Hotel<br>
     <span style="color:blue;">&#9679;</span> Parchi e giardini
   </div>
 
-  <!-- Pulsanti posizione -->
   <button class="locate-btn" onclick="trovaPosizione()">📍 Trova la mia posizione</button>
   <button class="stop-btn" onclick="fermaPosizione()">🛑 Stop tracciamento</button>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Inizializzazione mappa
-    const map = L.map('map').setView([43.77, 11.25], 14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20,
-      attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
-    }).addTo(map);
+    const map = L.map('map').setView([43.77,11.25],14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:20}).addTo(map);
 
-    // Dati punti (nome, lat, lon, colore, link)
     const punti = [
-      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760-Reviews-Osteria_Vini_e_Vecchi_Sapori-Florence_Tuscany.html"],
-      ["Il Latini", 43.77178234, 11.24922621, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252-Reviews-Il_Latini-Florence_Tuscany.html"],
-      ["Osteria de Pazzi", 43.76981604, 11.26091368, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1547057-Reviews-Osteria_De_Pazzi-Florence_Tuscany.html"],
-      ["Trattoria Bordino", 43.76697046, 11.25327581, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1187515-Reviews-Trattoria_Bordino-Florence_Tuscany.html"],
-      ["Il Grande Nuti Trattoria", 43.77438447, 11.25494761, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1130748-Reviews-Il_Grande_Nuti-Florence_Tuscany.html"],
-      ["Agricola Toscana", 43.77139809, 11.25696094, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d7856139-Reviews-Agricola_Toscana-Florence_Tuscany.html"],
-      ["Brandolino", 43.77490346, 11.25258631, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d9704320-Reviews-Ristorante_Brandolino-Florence_Tuscany.html"],
-      ["L'Osteria", 43.76789826, 11.25907833, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d17406201-Reviews-L_Osteria_Cucina_Casalinga-Florence_Tuscany.html"],
-      ["ARTE' BOUTIQUE HOTEL FIRENZE", 43.77572356, 11.25666108, "verde", "https://it.tripadvisor.ch/Hotel_Review-g187895-d17336552-Reviews-Arte_Boutique_Hotel-Florence_Tuscany.html"],
-      ["I giardini di boboli", 43.76255141, 11.24836741, "blu", "https://www.uffizi.it/giardino-boboli"],
-      ["Parco dei Giochi di Legno", 43.7701264, 11.22673691, "blu", "https://mindtrip.ai/attraction/florence-tuscany/parco-dei-giochi-di-legno/at-Gm5JMNHC"]
+      ["Vini e Vecchi Sapori",43.77011014,11.25681381,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760-Reviews-Osteria_Vini_e_Vecchi_Sapori-Florence_Tuscany.html"],
+      ["Il Latini",43.77178234,11.24922621,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252-Reviews-Il_Latini-Florence_Tuscany.html"],
+      ["Osteria de Pazzi",43.76981604,11.26091368,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d1547057-Reviews-Osteria_De_Pazzi-Florence_Tuscany.html"],
+      ["Trattoria Bordino",43.76697046,11.25327581,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d1187515-Reviews-Trattoria_Bordino-Florence_Tuscany.html"],
+      ["Il Grande Nuti Trattoria",43.77438447,11.25494761,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d1130748-Reviews-Il_Grande_Nuti-Florence_Tuscany.html"],
+      ["Agricola Toscana",43.77139809,11.25696094,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d7856139-Reviews-Agricola_Toscana-Florence_Tuscany.html"],
+      ["Brandolino",43.77490346,11.25258631,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d9704320-Reviews-Ristorante_Brandolino-Florence_Tuscany.html"],
+      ["L'Osteria",43.76789826,11.25907833,"rosso","https://it.tripadvisor.ch/Restaurant_Review-g187895-d17406201-Reviews-L_Osteria_Cucina_Casalinga-Florence_Tuscany.html"],
+      ["ARTE' BOUTIQUE HOTEL FIRENZE",43.77572356,11.25666108,"verde","https://it.tripadvisor.ch/Hotel_Review-g187895-d17336552-Reviews-Arte_Boutique_Hotel-Florence_Tuscany.html"],
+      ["I giardini di boboli",43.76255141,11.24836741,"blu","https://www.uffizi.it/giardino-boboli"],
+      ["Parco dei Giochi di Legno",43.7701264,11.22673691,"blu","https://mindtrip.ai/attraction/florence-tuscany/parco-dei-giochi-di-legno/at-Gm5JMNHC"]
     ];
 
-    // Icone colorate SVG
-    function coloredIcon(color) {
-      return L.divIcon({
-        className: "",
-        html: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
-          <path d="M12.5 0C5.6 0 0 5.6 0 12.5C0 22 12.5 41 12.5 41C12.5 41 25 22 25 12.5C25 5.6 19.4 0 12.5 0Z" fill="${color}" stroke="black" stroke-width="1"/>
-          <circle cx="12.5" cy="12.5" r="5" fill="white" stroke="black" stroke-width="1"/>
-        </svg>`,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34]
-      });
-    }
+    function colore(c){return c==="verde"?"green":c==="blu"?"blue":"red";}
+    function icona(col){return L.divIcon({html:`<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path d="M12.5 0C5.6 0 0 5.6 0 12.5C0 22 12.5 41 12.5 41C12.5 41 25 22 25 12.5C25 5.6 19.4 0 12.5 0Z" fill="${col}" stroke="black" stroke-width="1"/><circle cx="12.5" cy="12.5" r="5" fill="white" stroke="black" stroke-width="1"/></svg>`,iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34]});}
 
-    // Mappa colori
-    function coloreToHex(c) {
-      if (c === 'verde') return 'green';
-      if (c === 'blu') return 'blue';
-      return 'red';
-    }
-
-    // Markers + popup con pulsante "Vai"
-    const markers = [];
-    punti.forEach(([nome, lat, lon, colore, link]) => {
-      const marker = L.marker([lat, lon], { icon: coloredIcon(coloreToHex(colore)) }).addTo(map);
-      marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] });
-      marker.bindPopup(`
-        <strong>${nome}</strong><br>
-        <a href="${link}" target="_blank">Apri sito</a><br>
-        <button class="route-btn" onclick="vaiA(${lat}, ${lon})">Vai 🚗🚶‍♂️</button>
-      `);
-      markers.push({ nome, marker });
+    const markers=[];
+    punti.forEach(([n,la,lo,col,link])=>{
+      const m=L.marker([la,lo],{icon:icona(colore(col))}).addTo(map);
+      m.bindTooltip(n,{permanent:true,direction:"top",className:"label",offset:[0,-10]});
+      m.bindPopup(`<strong>${n}</strong><br><a href="${link}" target="_blank">Apri sito</a><br><button class="route-btn" onclick="vaiA(${la},${lo})">Vai 🚗🚶‍♂️</button>`);
+      markers.push({nome:n,marker:m});
     });
+    map.fitBounds(L.featureGroup(markers.map(m=>m.marker)).getBounds(),{padding:[30,30]});
 
-    // Fit alla bounding box dei punti
-    const group = L.featureGroup(markers.map(m => m.marker));
-    map.fitBounds(group.getBounds(), { padding: [30, 30] });
-
-    // Ricerca live + centratura
-    function aggiornaSuggerimenti() {
-      const input = document.getElementById('ricerca').value.trim().toLowerCase();
-      const box = document.getElementById('suggerimenti');
-      box.innerHTML = '';
-      if (!input) return;
-
-      const risultati = markers.filter(m => m.nome.toLowerCase().includes(input));
-      risultati.forEach(r => {
-        const div = document.createElement('div');
-        div.textContent = r.nome;
-        div.onclick = () => {
-          map.setView(r.marker.getLatLng(), 17);
-          r.marker.openPopup();
-          box.innerHTML = '';
-          document.getElementById('ricerca').value = '';
-        };
-        box.appendChild(div);
+    function aggiornaSuggerimenti(){
+      const val=document.getElementById('ricerca').value.toLowerCase();
+      const sug=document.getElementById('suggerimenti');
+      sug.innerHTML="";
+      if(!val)return;
+      markers.filter(m=>m.nome.toLowerCase().includes(val)).forEach(r=>{
+        const d=document.createElement('div'); d.textContent=r.nome;
+        d.onclick=()=>{map.setView(r.marker.getLatLng(),17);r.marker.openPopup();sug.innerHTML="";document.getElementById('ricerca').value="";};
+        sug.appendChild(d);
       });
     }
-
-    function cercaPunto() {
-      const input = document.getElementById('ricerca').value.trim().toLowerCase();
-      if (!input) return;
-      const trovato = markers.find(m => m.nome.toLowerCase().includes(input));
-      if (trovato) {
-        map.setView(trovato.marker.getLatLng(), 17);
-        trovato.marker.openPopup();
-        document.getElementById('ricerca').value = '';
-        document.getElementById('suggerimenti').innerHTML = '';
-      } else {
-        alert("Nessun punto trovato con questo nome.");
-      }
+    function cercaPunto(){
+      const val=document.getElementById('ricerca').value.toLowerCase();
+      const r=markers.find(m=>m.nome.toLowerCase().includes(val));
+      if(r){map.setView(r.marker.getLatLng(),17);r.marker.openPopup();}
+      document.getElementById('ricerca').value="";document.getElementById('suggerimenti').innerHTML="";
     }
 
-    // Posizione in tempo reale (marker + cerchio precisione)
-    let markerPosizione = null, cerchioPosizione = null, trackingAttivo = false;
-    function trovaPosizione() {
-      if (trackingAttivo) return;
-      trackingAttivo = true;
-
-      if (!navigator.geolocation) { alert("La geolocalizzazione non è supportata dal tuo browser."); return; }
-
-      map.on('locationfound', (e) => {
-        const radius = e.accuracy / 2;
-        if (markerPosizione && cerchioPosizione) {
-          markerPosizione.setLatLng(e.latlng);
-          cerchioPosizione.setLatLng(e.latlng);
-          cerchioPosizione.setRadius(radius);
-        } else {
-          markerPosizione = L.marker(e.latlng).addTo(map).bindPopup(`Sei qui (±${Math.round(radius)} m)`).openPopup();
-          cerchioPosizione = L.circle(e.latlng, radius, { color: '#1d4ed8', fillOpacity: 0.2 }).addTo(map);
+    let markerPos=null, cerchio=null, tracking=false;
+    function trovaPosizione(){
+      if(tracking)return; tracking=true;
+      map.on('locationfound',e=>{
+        const r=e.accuracy/2;
+        if(markerPos){markerPos.setLatLng(e.latlng);cerchio.setLatLng(e.latlng);cerchio.setRadius(r);}
+        else{
+          markerPos=L.marker(e.latlng).addTo(map).bindPopup(`Sei qui (±${Math.round(r)} m)`).openPopup();
+          cerchio=L.circle(e.latlng,r,{color:'#1d4ed8',fillOpacity:0.2}).addTo(map);
         }
       });
+      map.locate({setView:true,watch:true,maxZoom:16,enableHighAccuracy:true});
+    }
+    function fermaPosizione(){map.stopLocate();tracking=false;if(markerPos)map.removeLayer(markerPos);if(cerchio)map.removeLayer(cerchio);if(routingCtrl)map.removeControl(routingCtrl);}
 
-      map.on('locationerror', () => alert("Impossibile determinare la posizione."));
-      map.locate({ setView: true, watch: true, maxZoom: 16, enableHighAccuracy: true });
+    let routingCtrl=null, box=null;
+    function vaiA(lat,lon){
+      if(box)box.remove();
+      box=document.createElement('div');
+      box.className='route-choice';
+      box.innerHTML=`<span><b>Calcola percorso:</b></span>
+        <button class="btn-walk" onclick="calcolaPercorso('foot',${lat},${lon})">🚶‍♂️ A piedi</button>
+        <button class="btn-drive" onclick="calcolaPercorso('car',${lat},${lon})">🚗 In auto</button>`;
+      document.body.appendChild(box);
     }
 
-    function fermaPosizione() {
-      if (!trackingAttivo) return;
-      map.stopLocate();
-      trackingAttivo = false;
-      if (markerPosizione) map.removeLayer(markerPosizione);
-      if (cerchioPosizione) map.removeLayer(cerchioPosizione);
-      if (routingControl) map.removeControl(routingControl);
-      alert("Tracciamento interrotto.");
-    }
-
-    // Routing: scelta piedi/auto + calcolo
-    let routingControl = null;
-    let routeChoiceBox = null;
-
-    function vaiA(destLat, destLon) {
-      if (!navigator.geolocation) { alert("Geolocalizzazione non supportata."); return; }
-
-      if (routeChoiceBox) { routeChoiceBox.remove(); routeChoiceBox = null; }
-      routeChoiceBox = document.createElement('div');
-      routeChoiceBox.className = 'route-choice';
-      routeChoiceBox.innerHTML = `
-        <span><strong>Calcola percorso:</strong></span>
-        <button class="btn-walk" onclick="calcolaPercorso('foot', ${destLat}, ${destLon})">🚶‍♂️ A piedi</button>
-        <button class="btn-drive" onclick="calcolaPercorso('car', ${destLat}, ${destLon})">🚗 In auto</button>
-      `;
-      document.body.appendChild(routeChoiceBox);
-    }
-
-    function calcolaPercorso(modalita, destLat, destLon) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
-        const end = L.latLng(destLat, destLon);
-
-        if (routingControl) map.removeControl(routingControl);
-        if (routeChoiceBox) { routeChoiceBox.remove(); routeChoiceBox = null; }
-
-        // Server HTTPS compatibile: routing.openstreetmap.de
-        // Profili disponibili: routed-foot, routed-bike, routed-car
-        // Nota: il path resta '/route/v1/driving' anche per foot/car su questo host.
-        routingControl = L.Routing.control({
-          waypoints: [start, end],
-          router: new L.Routing.OSRMv1({
-            serviceUrl: `https://routing.openstreetmap.de/routed-${modalita}/route/v1/driving`
-          }),
-          lineOptions: { styles: [{ color: '#1d4ed8', opacity: 0.8, weight: 5 }] },
-          routeWhileDragging: false,
-          show: true, // mostra pannello di destra con distanza/tempo
-          addWaypoints: false,
-          draggableWaypoints: false,
-          fitSelectedRoutes: true,
-          language: 'it',
-          position: 'topright'
+    function calcolaPercorso(mode,lat,lon){
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const start=L.latLng(pos.coords.latitude,pos.coords.longitude);
+        const end=L.latLng(lat,lon);
+        if(routingCtrl)map.removeControl(routingCtrl);
+        if(box){box.remove();box=null;}
+        routingCtrl=L.Routing.control({
+          waypoints:[start,end],
+          router:new L.Routing.OSRMv1({serviceUrl:`https://routing.openstreetmap.de/routed-${mode}/route/v1/driving`}),
+          lineOptions:{styles:[{color:'#1d4ed8',opacity:0.8,weight:5}]},
+          routeWhileDragging:false,
+          show:true,
+          addWaypoints:false,
+          draggableWaypoints:false,
+          fitSelectedRoutes:true,
+          language:'it',
+          position:'topright'
         }).addTo(map);
-      }, () => alert("Impossibile determinare la tua posizione."));
+      });
     }
   </script>
 </body>
