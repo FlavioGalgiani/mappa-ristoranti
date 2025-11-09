@@ -43,27 +43,27 @@
   <script>
     const map = L.map('map').setView([43.77, 11.25], 14);
 
-    // Sfondo bianco e nero (CartoDB Positron - stabile)
+    // Sfondo bianco e nero (CartoDB Positron - libero e stabile)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 20,
       attribution: '&copy; OpenStreetMap contributors, &copy; CartoDB'
     }).addTo(map);
 
     const punti = [
-      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso"],
-      ["Il Latini", 43.77178234, 11.24922621, "rosso"],
-      ["Osteria dei Pazzi", 43.76981604, 11.26091368, "rosso"],
-      ["Trattoria Bordino", 43.76697046, 11.25327581, "rosso"],
-      ["Il Grande Nuti Trattoria", 43.77438447, 11.25494761, "rosso"],
-      ["Agricola Toscana", 43.77139809, 11.25696094, "rosso"],
-      ["Brandolino", 43.77490346, 11.25258631, "rosso"],
-      ["L'Osteria", 43.76789826, 11.25907833, "rosso"],
-      ["ARTE' BOUTIQUE HOTEL FI", 43.77572356, 11.25666108, "verde"],
-      ["I Giardini di Boboli", 43.76255141, 11.24836741, "blu"],
-      ["Parco dei Giochi di Legno", 43.7701264, 11.22673691, "blu"]
+      ["Vini e Vecchi Sapori", 43.77011014, 11.25681381, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1110760-Reviews-Osteria_Vini_e_Vecchi_Sapori-Florence_Tuscany.html"],
+      ["Il Latini", 43.77178234, 11.24922621, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1088252-Reviews-Il_Latini-Florence_Tuscany.html"],
+      ["Osteria de Pazzi", 43.76981604, 11.26091368, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1547057-Reviews-Osteria_De_Pazzi-Florence_Tuscany.html"],
+      ["Trattoria Bordino", 43.76697046, 11.25327581, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1187515-Reviews-Trattoria_Bordino-Florence_Tuscany.html"],
+      ["Il Grande Nuti Trattoria", 43.77438447, 11.25494761, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d1130748-Reviews-Il_Grande_Nuti-Florence_Tuscany.html"],
+      ["Agricola Toscana", 43.77139809, 11.25696094, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d7856139-Reviews-Agricola_Toscana-Florence_Tuscany.html"],
+      ["Brandolino", 43.77490346, 11.25258631, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d9704320-Reviews-Ristorante_Brandolino-Florence_Tuscany.html"],
+      ["L'Osteria", 43.76789826, 11.25907833, "rosso", "https://it.tripadvisor.ch/Restaurant_Review-g187895-d17406201-Reviews-L_Osteria_Cucina_Casalinga-Florence_Tuscany.html"],
+      ["ARTE' BOUTIQUE HOTEL FIRENZE", 43.77572356, 11.25666108, "verde", "https://it.tripadvisor.ch/Hotel_Review-g187895-d17336552-Reviews-Arte_Boutique_Hotel-Florence_Tuscany.html"],
+      ["I giardini di boboli", 43.76255141, 11.24836741, "blu", "https://www.uffizi.it/giardino-boboli"],
+      ["Parco dei Giochi di Legno", 43.7701264, 11.22673691, "blu", "https://mindtrip.ai/attraction/florence-tuscany/parco-dei-giochi-di-legno/at-Gm5JMNHC"]
     ];
 
-    // icone SVG colorate
+    // Funzione per creare icone colorate
     function coloredIcon(color) {
       return L.divIcon({
         className: "",
@@ -78,15 +78,27 @@
     }
 
     const markers = [];
-    punti.forEach(([nome, lat, lon, colore]) => {
+    punti.forEach(([nome, lat, lon, colore, link]) => {
       let color = "red";
       if (colore === "verde") color = "green";
       if (colore === "blu") color = "blue";
+
       const marker = L.marker([lat, lon], { icon: coloredIcon(color) }).addTo(map);
+
+      // Tooltip fisso
       marker.bindTooltip(nome, { permanent: true, direction: 'top', className: 'label', offset: [0, -10] }).openTooltip();
+
+      // Popup cliccabile con link
+      if (link) {
+        marker.bindPopup(`<strong>${nome}</strong><br><a href="${link}" target="_blank">Apri sito</a>`);
+      } else {
+        marker.bindPopup(`<strong>${nome}</strong>`);
+      }
+
       markers.push(marker);
     });
 
+    // Adatta la vista a tutti i punti
     const group = L.featureGroup(markers);
     map.fitBounds(group.getBounds(), { padding: [30, 30] });
   </script>
