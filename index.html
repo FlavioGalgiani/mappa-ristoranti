@@ -79,7 +79,6 @@
     }
     .route-btn:hover { background:#2563eb; }
 
-    /* 🔹 Pulsante compatto per riaprire percorso */
     #routeToggle {
       position: fixed;
       top: 18px;
@@ -189,39 +188,46 @@
       navigator.geolocation.getCurrentPosition(pos => {
         const start = L.latLng(pos.coords.latitude, pos.coords.longitude);
         const end = L.latLng(destLat, destLon);
-        if (routingControl) map.removeControl(routingControl);
 
-        routingControl = L.Routing.control({
-          waypoints: [start, end],
-          router: osrmRouter,
-          lineOptions: { styles: [{ color: '#1d4ed8', opacity: .85, weight: 5 }] },
-          addWaypoints: false, draggableWaypoints: false, fitSelectedRoutes: true,
-          language: 'it', show: true, position: 'topright'
-        }).addTo(map);
+        if (!routingControl) {
+          routingControl = L.Routing.control({
+            waypoints: [start, end],
+            router: osrmRouter,
+            lineOptions: { styles: [{ color: '#1d4ed8', opacity: .85, weight: 5 }] },
+            addWaypoints: false, draggableWaypoints: false, fitSelectedRoutes: true,
+            language: 'it', show: true, position: 'topright'
+          }).addTo(map);
+        } else {
+          routingControl.setWaypoints([start, end]);
+        }
 
         setTimeout(() => {
           const panel = document.querySelector('.leaflet-routing-container');
           if (panel) {
             const collapseBtn = panel.querySelector('.leaflet-routing-collapse-btn');
-            if (collapseBtn) {
+            if (collapseBtn && !collapseBtn.dataset.bound) {
               collapseBtn.addEventListener('click', () => {
                 panel.style.display = 'none';
                 document.getElementById('routeToggle').style.display = 'flex';
               });
+              collapseBtn.dataset.bound = 'true';
             }
+            panel.style.display = 'block';
           }
-        }, 800);
+        }, 600);
 
         document.getElementById('routeToggle').style.display = 'none';
         if (!watchId) watchId = navigator.geolocation.watchPosition(aggiornaPosizione);
       }, () => alert("Impossibile determinare la tua posizione."));
     }
 
-    // ✅ ora il pulsante blu riapre DAVVERO il box
+    // ✅ mostra di nuovo il box già aperto
     document.getElementById('routeToggle').addEventListener('click', () => {
-      const expandBtn = document.querySelector('.leaflet-routing-container .leaflet-routing-collapse-btn');
-      if (expandBtn) expandBtn.click();
-      document.getElementById('routeToggle').style.display = 'none';
+      const panel = document.querySelector('.leaflet-routing-container');
+      if (panel) {
+        panel.style.display = 'block';
+        document.getElementById('routeToggle').style.display = 'none';
+      }
     });
 
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
