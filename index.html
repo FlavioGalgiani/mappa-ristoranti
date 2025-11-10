@@ -245,28 +245,30 @@
       }, () => alert("Impossibile determinare la tua posizione."));
     }
 
-// ✅ Mostra di nuovo il box completo, anche se chiuso cliccando fuori
+// ✅ Mostra sempre il box completo anche dopo chiusura manuale
 document.getElementById('routeToggle').addEventListener('click', () => {
+  // Rimuove eventuali pannelli "fantasma"
+  document.querySelectorAll('.leaflet-routing-container').forEach((el, i) => {
+    if (i > 0) el.remove();
+  });
+
   const panel = document.querySelector('.leaflet-routing-container');
   if (panel) {
-    // Forza visibilità e reset di eventuali stili errati
     panel.style.display = 'block';
     panel.style.visibility = 'visible';
     panel.style.opacity = '1';
     panel.style.transform = 'translateY(0)';
     panel.classList.add('show');
     panel.classList.remove('leaflet-routing-collapsed');
-
-    // In caso sia stato rimosso dal DOM (mobile Safari)
-    if (!panel.parentElement || !panel.parentElement.classList.contains('leaflet-top')) {
-      document.body.appendChild(panel);
-    }
-
-    // Nasconde l'icona 🧭
     document.getElementById('routeToggle').style.display = 'none';
+  } else {
+    // Se per qualche motivo non esiste più, ricrea le indicazioni
+    if (window.lastDestination) {
+      const [lat, lon] = window.lastDestination;
+      vaiA(lat, lon);
+    }
   }
 });
-
 
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
     document.getElementById('ricerca').addEventListener('input', aggiornaSuggerimenti);
@@ -308,4 +310,5 @@ document.getElementById('routeToggle').addEventListener('click', () => {
   </script>
 </body>
 </html>
+
 
