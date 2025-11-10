@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mappa Firenze</title>
 
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 
@@ -57,8 +56,10 @@
 
     .leaflet-top.leaflet-left { top:80px; }
 
-    .leaflet-routing-container { font-size:10pt; background:rgba(255,255,255,.95); border-radius:8px; transition: opacity .3s ease; }
-    .leaflet-routing-container.hidden { opacity:0; display:none; }
+    .leaflet-routing-container {
+      font-size:10pt; background:rgba(255,255,255,.95);
+      border-radius:8px; transition:opacity .3s ease;
+    }
 
     @media (max-width: 768px) {
       .leaflet-routing-container {
@@ -182,10 +183,7 @@
       if (!watchId) watchId = navigator.geolocation.watchPosition(aggiornaPosizione);
     }
 
-    const osrmRouter = new L.Routing.OSRMv1({
-      serviceUrl: 'https://router.project-osrm.org/route/v1',
-      profile: 'driving'
-    });
+    const osrmRouter = new L.Routing.OSRMv1({ serviceUrl: 'https://router.project-osrm.org/route/v1', profile: 'driving' });
 
     function vaiA(destLat, destLon) {
       navigator.geolocation.getCurrentPosition(pos => {
@@ -204,11 +202,9 @@
         setTimeout(() => {
           const panel = document.querySelector('.leaflet-routing-container');
           if (panel) {
-            panel.style.display = 'block';
-            panel.style.opacity = '1';
-            const btn = panel.querySelector('.leaflet-routing-collapse-btn');
-            if (btn) {
-              btn.addEventListener('click', () => {
+            const collapseBtn = panel.querySelector('.leaflet-routing-collapse-btn');
+            if (collapseBtn) {
+              collapseBtn.addEventListener('click', () => {
                 panel.style.display = 'none';
                 document.getElementById('routeToggle').style.display = 'flex';
               });
@@ -221,14 +217,12 @@
       }, () => alert("Impossibile determinare la tua posizione."));
     }
 
-    function togglePercorso() {
-      const panel = document.querySelector('.leaflet-routing-container');
-      if (panel) {
-        panel.style.display = 'block';
-        panel.style.opacity = '1';
-        document.getElementById('routeToggle').style.display = 'none';
-      }
-    }
+    // ✅ ora il pulsante blu riapre DAVVERO il box
+    document.getElementById('routeToggle').addEventListener('click', () => {
+      const expandBtn = document.querySelector('.leaflet-routing-container .leaflet-routing-collapse-btn');
+      if (expandBtn) expandBtn.click();
+      document.getElementById('routeToggle').style.display = 'none';
+    });
 
     const placesService = new google.maps.places.PlacesService(document.createElement('div'));
     document.getElementById('ricerca').addEventListener('input', aggiornaSuggerimenti);
